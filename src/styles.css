@@ -1,0 +1,71 @@
+.logo.vanilla:hover {
+  filter: drop-shadow(0 0 2em #ffe21c);
+}
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1 {
+  text-align: center;
+}
+
+input,
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #0f0f0f;
+  background-color: #ffffff;
+  transition: border-color 0.25s;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #000000;
+}
+button:active {
+  color: #FFFFFF;
+  border-color: #000000;
+  background-color: #808080;
+}
+
+canvas {
+  cursor: crosshair;
+  position: absolute;
+  clear: both;
+  float: left;
+  border: solid 1px #000;
+  margin: 10px;
+  font-size: 0;
+}
+
+#imageCanvas {
+  z-index: 1;
+}
+
+#maskCanvas {
+  z-index: 2;
+}
+
+#selectCanvas {
+  z-index: 3;
+}

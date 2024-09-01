@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tauri App</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <header>
+      <h1>Segment Anything Demo</h1>
+      <button id="btnOpen">開く</button>
+      <button id="btnProc">セグメンテーション</button>
+    </header>
+    <div>
+      <canvas id="imageCanvas"></canvas>
+      <canvas id="maskCanvas"></canvas>
+      <canvas id="selectCanvas"></canvas>
+    </div>
+  </body>
+</html>
