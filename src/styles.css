@@ -7,8 +7,8 @@
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #0f0f0fFF;
+  background-color: #f6f6f6FF;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -53,7 +53,7 @@ canvas {
   position: absolute;
   clear: both;
   float: left;
-  border: solid 1px #000;
+  border: solid 1px #00000000;
   margin: 10px;
   font-size: 0;
 }
@@ -64,8 +64,10 @@ canvas {
 
 #maskCanvas {
   z-index: 2;
+  background-color: transparent;
 }
 
 #selectCanvas {
   z-index: 3;
+  background-color: transparent;
 }

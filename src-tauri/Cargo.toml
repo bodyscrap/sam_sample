@@ -16,6 +16,12 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 image = "0.25.2"
 
+candle-core = "0.6.0"
+candle-nn = "0.6.0"
+candle-transformers = "0.6.0"
+hf-hub = { version = "0.3.2", features = ["tokio"] }
+anyhow = "1.0.87"
+
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
