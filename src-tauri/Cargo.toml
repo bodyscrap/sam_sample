@@ -11,17 +11,26 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
+# Tauriの初期状態でついてるもの
 tauri = { version = "1", features = [ "dialog-open", "shell-open"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-image = "0.25.2"
 
-candle-core = "0.6.0"
-candle-nn = "0.6.0"
-candle-transformers = "0.6.0"
+# このプロジェクトで追加したもの
+image = "0.25.2" # 画像の取り扱い。他にもCrateがいくつかあるがサンプルとそろえた。
+anyhow = "1.0.87" # Result型のラッパーとかの便利クラス
+
+# candleシリーズ(使う機能によって増減する。coreとnnはほぼ必須。transformerも最近ならだいたい使う。)
+# "cuda"のfeature全部有効にする必要があるかまでは未確認
+candle-core = {version = "0.6.0", features = ["cuda"] }
+candle-nn = {version = "0.6.0", features = ["cuda"] }
+candle-transformers = {version = "0.6.0", features = ["cuda"] }
+# huggingfaceのAPI。モデルデータのダウンロードに使用している
+# "tokio"はバックグラウンド読み込み用だと思う。
 hf-hub = { version = "0.3.2", features = ["tokio"] }
-anyhow = "1.0.87"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
+# 現時点では良くわからない。
+# 画像とかデカいデータのフロント↔バックのやり取りはcustom-protocol使った方が良いというのを風の噂できいた。
 custom-protocol = ["tauri/custom-protocol"]

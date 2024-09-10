@@ -22,13 +22,10 @@ impl SamApp
     pub fn new_tyny(_model_path: &str) -> Result<Self>
     {
         // デバイスの取得(Cudaが使えるならGPU0を使用。そうでないならCPUを使用)
-        let device = if cuda_is_available()
+        let device = match Device::new_cuda(0)
         {
-            Device::new_cuda(0)?
-        }
-        else
-        {
-            Device::Cpu
+            Ok(device) => device,
+            Err(_) => Device::Cpu,
         };
         // モデルのパラメータのロード
         // 暫定でAPI経由でhuggingfaceからdownload
