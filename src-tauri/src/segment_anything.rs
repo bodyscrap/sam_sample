@@ -1,7 +1,6 @@
-use anyhow::Result; 
-use candle_core::utils::cuda_is_available;
-// Resultのラッパーユーティリティ
-use hf_hub::api::sync::{self, ApiError};
+//! SegmentAnythingのラッパーモジュール
+
+use anyhow::Result; // Resultのラッパーユーティリティ
 use std::sync::Mutex;
 use std::vec;
 use candle_core::{Device, DType, Tensor};
@@ -9,16 +8,24 @@ use candle_nn::var_builder::VarBuilder;
 use candle_transformers::models::segment_anything::sam::{self, Sam};
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 
+/// SegmentAnythingを利用したアプリケーション
 pub struct SamApp
 {
-    model: Mutex<Sam>,      // SegmentAnythingのモデル
-    device: Mutex<Device>,  // モデルの実行デバイス（CPU/GPU）
-    mask_color: Mutex<Rgba<u8>>,  // マスクの色
+    /// モデル
+    model: Mutex<Sam>,
+    /// 推論デバイス
+    device: Mutex<Device>,
+    /// マスクの色
+    mask_color: Mutex<Rgba<u8>>,
 }
 
 impl SamApp
 {
-    // モデルの初期化(tynyモデル)
+    /// tyny SAMでの初期化
+    /// # Arguments
+    /// - `model_path` : モデルのパス(本サンプルでは未使用)
+    /// # Returns
+    /// SamAppのインスタンス
     pub fn new_tyny(_model_path: &str) -> Result<Self>
     {
         // デバイスの取得(Cudaが使えるならGPU0を使用。そうでないならCPUを使用)
@@ -49,6 +56,15 @@ impl SamApp
         })
     }
 
+    /// 入力画像からマスクを生成
+    /// # Arguments
+    /// - `width` : 画像の幅
+    /// - `height` : 画像の高さ
+    /// - `img_data` : RGBA画像のバッファ
+    /// - `px` : positive point のx座標
+    /// - `py` : positive point のy座標
+    /// # Returns
+    /// 前景マスク画像バッファ
     pub fn process_sam(&self, width: u32, height: u32, img_data: Vec<u8>, px:f32, py:f32) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>>
     {
         // 設定されているマスクの色を取得
@@ -71,6 +87,16 @@ impl SamApp
         }
     }
 
+    #[cfg_attr(doc, katexit::katexit)]  // ドキュメント生成時にkatexitを適用
+    /// 入力画像からネットワークへの入力Tensorを作成。  
+    /// 入力画像の幅、高さの内長い方が[sam::IMAGE_SIZE]になるようにリサイズ  
+    /// 試しに書いて見ただけの数式 $\sum_{i=0}^{k} x^i$ 。
+    /// # Arguments
+    /// - `img` : 入力画像
+    /// # Returns
+    /// - 入力Tensor
+    /// - 入力画像の高さ(pixel)
+    /// - 入力画像の幅(pixel)
     fn make_input_tensor(&self, img: DynamicImage) -> Result<(Tensor, usize, usize)> 
     {
         // 入力画像サイズの保存
@@ -97,6 +123,13 @@ impl SamApp
         Ok((data, initial_h, initial_w))
     }
 
+    /// マスク画像を作成
+    /// # Arguments
+    /// - `input` : マスクの入力Tensor
+    /// - `out_w` : 出力画像の幅
+    /// - `out_h` : 出力画像の高さ 
+    /// # Returns
+    /// マスク画像バッファ
     fn create_mask(&self, input:Tensor, out_w:usize, out_h: usize) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>>
     {
         let color = self.mask_color.lock().unwrap();
