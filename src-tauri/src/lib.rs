@@ -36,7 +36,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         // Stateの初期化
         .setup(|app| {
-            let sam_app = SamApp::new_tyny("model").expect("failed to initialize sam app");
+            let sam_app = SamApp::new_tyny(app,"models/mobile_sam-tiny-vitt.safetensors").expect("failed to initialize sam app");
             app.manage(sam_app);
             Ok(())
         })

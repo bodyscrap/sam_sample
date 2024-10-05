@@ -1,5 +1,5 @@
 //! SegmentAnythingのラッパーモジュール
-
+use tauri::{App, Manager};
 use anyhow::Result; // Resultのラッパーユーティリティ
 use candle_core::{DType, Device, Tensor};
 use candle_nn::var_builder::VarBuilder;
@@ -24,22 +24,15 @@ impl SamApp {
     /// - `model_path` : モデルのパス(本サンプルでは未使用)
     /// # Returns
     /// SamAppのインスタンス
-    pub fn new_tyny(_model_path: &str) -> Result<Self> {
+    pub fn new_tyny(app:&mut App, model_path: &str) -> Result<Self> {
         // デバイスの取得(Cudaが使えるならGPU0を使用。そうでないならCPUを使用)
         let device = match Device::new_cuda(0) {
             Ok(device) => device,
             Err(_) => Device::Cpu,
         };
         // モデルのパラメータのロード
-        // 暫定でAPI経由でhuggingfaceからdownload
-
-        // hf_hubのAPIを初期化
-        let api = hf_hub::api::sync::Api::new()?;
-        // 指定モデルのAPIを取得
-        let api = api.model("lmz/candle-sam".to_string());
-        let filename = "mobile_sam-tiny-vitt.safetensors"; // tynyモデルの使用
-        let model_data = api.get(filename)?; // モデルのパスの取得
-                                             // 指定のモデルのVarBuilderArgs(VarBuilderとPath)
+        let resource_dir = app.path().resource_dir().expect("failed to resolve resource");
+        let model_data = resource_dir.join(model_path);
         let vb =
             unsafe { VarBuilder::from_mmaped_safetensors(&[model_data], DType::F32, &device)? };
 

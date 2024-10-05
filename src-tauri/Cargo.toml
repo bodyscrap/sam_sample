@@ -32,9 +32,6 @@ anyhow = "1.0.87" # Result型のラッパーとかの便利クラス
 candle-core = {version = "0.6.0", features = ["cuda"] }
 candle-nn = {version = "0.6.0", features = ["cuda"] }
 candle-transformers = {version = "0.6.0", features = ["cuda"] }
-# huggingfaceのAPI。モデルデータのダウンロードに使用している
-# "tokio"はバックグラウンド読み込み用だと思う。
-hf-hub = { version = "0.3.2", features = ["tokio"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
