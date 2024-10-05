@@ -1,16 +1,15 @@
 //! SegmentAnythingのラッパーモジュール
 
 use anyhow::Result; // Resultのラッパーユーティリティ
-use std::sync::Mutex;
-use std::vec;
-use candle_core::{Device, DType, Tensor};
+use candle_core::{DType, Device, Tensor};
 use candle_nn::var_builder::VarBuilder;
 use candle_transformers::models::segment_anything::sam::{self, Sam};
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
+use std::sync::Mutex;
+use std::vec;
 
 /// SegmentAnythingを利用したアプリケーション
-pub struct SamApp
-{
+pub struct SamApp {
     /// モデル
     model: Mutex<Sam>,
     /// 推論デバイス
@@ -19,18 +18,15 @@ pub struct SamApp
     mask_color: Mutex<Rgba<u8>>,
 }
 
-impl SamApp
-{
+impl SamApp {
     /// tyny SAMでの初期化
     /// # Arguments
     /// - `model_path` : モデルのパス(本サンプルでは未使用)
     /// # Returns
     /// SamAppのインスタンス
-    pub fn new_tyny(_model_path: &str) -> Result<Self>
-    {
+    pub fn new_tyny(_model_path: &str) -> Result<Self> {
         // デバイスの取得(Cudaが使えるならGPU0を使用。そうでないならCPUを使用)
-        let device = match Device::new_cuda(0)
-        {
+        let device = match Device::new_cuda(0) {
             Ok(device) => device,
             Err(_) => Device::Cpu,
         };
@@ -41,10 +37,11 @@ impl SamApp
         let api = hf_hub::api::sync::Api::new()?;
         // 指定モデルのAPIを取得
         let api = api.model("lmz/candle-sam".to_string());
-        let filename = "mobile_sam-tiny-vitt.safetensors";  // tynyモデルの使用
-        let model_data= api.get(filename)?;  // モデルのパスの取得
-        // 指定のモデルのVarBuilderArgs(VarBuilderとPath)
-        let vb = unsafe { VarBuilder::from_mmaped_safetensors(&[model_data], DType::F32, &device)? };
+        let filename = "mobile_sam-tiny-vitt.safetensors"; // tynyモデルの使用
+        let model_data = api.get(filename)?; // モデルのパスの取得
+                                             // 指定のモデルのVarBuilderArgs(VarBuilderとPath)
+        let vb =
+            unsafe { VarBuilder::from_mmaped_safetensors(&[model_data], DType::F32, &device)? };
 
         // 指定のVarBuilderで初期化したモデルを作成
         let model = Sam::new_tiny(vb)?;
@@ -65,16 +62,21 @@ impl SamApp
     /// - `py` : positive point のy座標
     /// # Returns
     /// 前景マスク画像バッファ
-    pub fn process_sam(&self, width: u32, height: u32, img_data: Vec<u8>, px:f32, py:f32) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>>
-    {
+    pub fn process_sam(
+        &self,
+        width: u32,
+        height: u32,
+        img_data: Vec<u8>,
+        px: f32,
+        py: f32,
+    ) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>> {
         // 設定されているマスクの色を取得
         let pos_point = vec![(px as f64 / width as f64, py as f64 / height as f64, true)];
         // u8配列からImageBufferを作成
-        let img:Option<ImageBuffer<Rgba<u8>, Vec<u8>>> = ImageBuffer::from_vec(width, height, img_data);
-        match img
-        {
-            Some(img) => 
-            {
+        let img: Option<ImageBuffer<Rgba<u8>, Vec<u8>>> =
+            ImageBuffer::from_vec(width, height, img_data);
+        match img {
+            Some(img) => {
                 let img = DynamicImage::ImageRgba8(img);
                 // モデルに合わせてリサイズしたTensorと元の画像サイズを取得
                 let (input, org_h, org_w) = self.make_input_tensor(img)?;
@@ -82,12 +84,12 @@ impl SamApp
                 let (mask, _iou_prediction) = model.forward(&input, &pos_point, false)?;
                 let mask_buf = self.create_mask(mask, org_w, org_h)?;
                 Ok(mask_buf)
-            },
+            }
             None => Err(anyhow::anyhow!("Failed to create ImageBuffer")),
         }
     }
 
-    #[cfg_attr(doc, katexit::katexit)]  // ドキュメント生成時にkatexitを適用
+    #[cfg_attr(doc, katexit::katexit)] // ドキュメント生成時にkatexitを適用
     /// 入力画像からネットワークへの入力Tensorを作成。  
     /// 入力画像の幅、高さの内長い方が[sam::IMAGE_SIZE]になるようにリサイズ  
     /// 試しに書いて見ただけの数式 $\sum_{i=0}^{k} x^i$ 。
@@ -97,8 +99,7 @@ impl SamApp
     /// - 入力Tensor
     /// - 入力画像の高さ(pixel)
     /// - 入力画像の幅(pixel)
-    fn make_input_tensor(&self, img: DynamicImage) -> Result<(Tensor, usize, usize)> 
-    {
+    fn make_input_tensor(&self, img: DynamicImage) -> Result<(Tensor, usize, usize)> {
         // 入力画像サイズの保存
         let (initial_h, initial_w) = (img.height() as usize, img.width() as usize);
         // 画像の長い側の辺がsam::IMAGE_SIZEになるようにアス比を保ってリサイズ
@@ -118,8 +119,8 @@ impl SamApp
         // リサイズ後の画像をRGBに変換し、Tensorを作成
         let img = img.to_rgb8();
         let data = img.into_raw();
-            let data = Tensor::from_vec(data, (height, width, 3), &self.device.lock().unwrap())?
-            .permute((2, 0, 1))?;   // Pytorchの形式である(C, H, W)に変換
+        let data = Tensor::from_vec(data, (height, width, 3), &self.device.lock().unwrap())?
+            .permute((2, 0, 1))?; // Pytorchの形式である(C, H, W)に変換
         Ok((data, initial_h, initial_w))
     }
 
@@ -127,11 +128,15 @@ impl SamApp
     /// # Arguments
     /// - `input` : マスクの入力Tensor
     /// - `out_w` : 出力画像の幅
-    /// - `out_h` : 出力画像の高さ 
+    /// - `out_h` : 出力画像の高さ
     /// # Returns
     /// マスク画像バッファ
-    fn create_mask(&self, input:Tensor, out_w:usize, out_h: usize) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>>
-    {
+    fn create_mask(
+        &self,
+        input: Tensor,
+        out_w: usize,
+        out_h: usize,
+    ) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>> {
         let color = self.mask_color.lock().unwrap();
         let _temp_dim = input.dims();
         let h = _temp_dim[1];
@@ -139,7 +144,10 @@ impl SamApp
         // RgbaImageを作成 (幅w, 高さhのRGBA画像)
         let mut img = RgbaImage::new(w as u32, h as u32);
         // Tensorをフラット化して参照
-        let values = input.flatten_all()?.to_vec1::<f32>().expect("Failed to convert tensor to Vec<f32>");
+        let values = input
+            .flatten_all()?
+            .to_vec1::<f32>()
+            .expect("Failed to convert tensor to Vec<f32>");
         let th = 0.5f32;
         // 閾値以上の画素に色付け
         for y in 0..h {
@@ -147,16 +155,21 @@ impl SamApp
                 let index = y * w + x;
                 let value = values[index];
                 let pixel = if value >= th {
-                    color.clone()   // マスクの色
+                    color.clone() // マスクの色
                 } else {
-                    Rgba([0, 0, 0, 0])  // 透明
+                    Rgba([0, 0, 0, 0]) // 透明
                 };
                 // ピクセルを画像に設定
                 img.put_pixel(x as u32, y as u32, pixel);
             }
         }
         // リサイズして(outH, outW, 4)に変換
-        let img = image::imageops::resize(&img, out_w as u32, out_h as u32, image::imageops::FilterType::Nearest);
+        let img = image::imageops::resize(
+            &img,
+            out_w as u32,
+            out_h as u32,
+            image::imageops::FilterType::Nearest,
+        );
         Ok(img)
     }
 }

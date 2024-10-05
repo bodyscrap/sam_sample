@@ -1,4 +1,4 @@
-const { invoke } = window.__TAURI__.tauri;
+const { invoke } = window.__TAURI__.core;
 const { open, save } = window.__TAURI__.dialog;
 
 let _imageCanvas = document.querySelector("#imageCanvas");
