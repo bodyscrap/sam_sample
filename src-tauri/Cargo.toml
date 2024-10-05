@@ -7,7 +7,7 @@ edition = "2021"
 
 [lib]
 name = "sam_sample_lib"
-crate-type = ["staticlib", "cdylib", "rlib", "lib"]
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,7 +21,7 @@ tauri-plugin-shell = "2"
 tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-katexit = "0.1.0"
+#katexit = "0.1.0"
 
 # このプロジェクトで追加したもの
 image = "0.25.2" # 画像の取り扱い。他にもCrateがいくつかあるがサンプルとそろえた。
@@ -29,9 +29,9 @@ anyhow = "1.0.87" # Result型のラッパーとかの便利クラス
 
 # candleシリーズ(使う機能によって増減する。coreとnnはほぼ必須。transformerも最近ならだいたい使う。)
 # "cuda"のfeature全部有効にする必要があるかまでは未確認
-candle-core = {version = "0.6.0", features = ["cuda"] }
-candle-nn = {version = "0.6.0", features = ["cuda"] }
-candle-transformers = {version = "0.6.0", features = ["cuda"] }
+candle-core = {version = "0.6.0", features = [] }
+candle-nn = {version = "0.6.0", features = [] }
+candle-transformers = {version = "0.6.0", features = [] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

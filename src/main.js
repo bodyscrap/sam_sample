@@ -1,5 +1,5 @@
 const { invoke } = window.__TAURI__.core;
-const { open, save } = window.__TAURI__.dialog;
+const { open } = window.__TAURI__.dialog;
 
 let _imageCanvas = document.querySelector("#imageCanvas");
 let _maskCanvas = document.querySelector("#maskCanvas");
